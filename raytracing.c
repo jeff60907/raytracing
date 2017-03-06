@@ -5,11 +5,13 @@
 #include "primitives.h"
 #include "raytracing.h"
 #include "idx_stack.h"
+#include <omp.h>
 
 #define MAX_REFLECTION_BOUNCES	3
 #define MAX_DISTANCE 1000000000000.0
 #define MIN_DISTANCE 0.00001
 #define SAMPLES 4
+#define thread_count 64
 
 #define SQUARE(x) (x * x)
 #define MAX(a, b) (a > b ? a : b)
@@ -465,8 +467,9 @@ void raytracing(uint8_t *pixels, color background_color,
     calculateBasisVectors(u, v, w, view);
 
     idx_stack stk;
-
     int factor = sqrt(SAMPLES);
+    #pragma omp parallel for num_threads(thread_count) \
+    private(d, object_color, stk)
     for (int j = 0; j < height; j++) {
         for (int i = 0; i < width; i++) {
             double r = 0, g = 0, b = 0;
